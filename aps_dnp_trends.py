@@ -4,6 +4,13 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import requests
 
+def scrape(abstract):
+    date = abstract.find(name = 'meta', attrs = {'name': 'citation_date'})['content']
+    [session] = [heading.text for heading in abstract.find_all(name = 'h3') if 'Session' in heading.text]
+    title = abstract.find(name = 'meta', attrs = {'name': 'citation_title'})['content']
+    authors = abstract.find(name = 'meta', attrs = {'name': 'citation_authors'})['content']
+    return date, session, title, authors
+
 def main():
 
     epitome_url = 'https://meetings.aps.org/Meeting/DNP19/APS_epitome'
