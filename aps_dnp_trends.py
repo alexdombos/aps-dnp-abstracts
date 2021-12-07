@@ -6,6 +6,7 @@ import requests
 
 def scrape(abstract):
     date = abstract.find(name = 'meta', attrs = {'name': 'citation_date'})['content']
+    [identifier] = [heading.text.split(':')[1].strip() for heading in abstract.find_all(name = 'h3') if 'Abstract' in heading.text]
     [session] = [heading.text for heading in abstract.find_all(name = 'h3') if 'Session' in heading.text]
     title = abstract.find(name = 'meta', attrs = {'name': 'citation_title'})['content']
     authors = abstract.find(name = 'meta', attrs = {'name': 'citation_authors'})['content']
@@ -13,7 +14,7 @@ def scrape(abstract):
         [text] = [division.text for division in abstract.find_all('div', {'class': 'largernormal', 'style': 'margin-bottom: 1em;'})]
     except ValueError:
         text = ''
-    return date, session, title, authors, text
+    return date, identifier, session, title, authors, text
 
 def main():
 
@@ -34,6 +35,8 @@ def main():
             abstract_url = urljoin(session_url, abstract_link['href'])
             abstract_response = requests.get(url = abstract_url)
             abstract_soup = BeautifulSoup(markup = abstract_response.content, features = 'html.parser')
+            info = scrape(abstract_soup)
+            assert info[1] == abstract_link.text.split(':')[0].strip()
 
 if __name__ == '__main__':
     main()
