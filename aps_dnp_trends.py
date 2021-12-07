@@ -9,7 +9,11 @@ def scrape(abstract):
     [session] = [heading.text for heading in abstract.find_all(name = 'h3') if 'Session' in heading.text]
     title = abstract.find(name = 'meta', attrs = {'name': 'citation_title'})['content']
     authors = abstract.find(name = 'meta', attrs = {'name': 'citation_authors'})['content']
-    return date, session, title, authors
+    try:
+        [text] = [division.text for division in abstract.find_all('div', {'class': 'largernormal', 'style': 'margin-bottom: 1em;'})]
+    except ValueError:
+        text = ''
+    return date, session, title, authors, text
 
 def main():
 
