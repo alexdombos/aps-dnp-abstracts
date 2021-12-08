@@ -18,7 +18,7 @@ def scrape(abstract):
 
 def main():
 
-    epitome_url = 'https://meetings.aps.org/Meeting/DNP19/APS_epitome'
+    epitome_url = 'https://meetings.aps.org/Meeting/DNP16/APS_epitome'
     epitome_response = requests.get(url = epitome_url)
     epitome_soup = BeautifulSoup(markup = epitome_response.content, features = 'html.parser')
 
@@ -30,7 +30,7 @@ def main():
         session_soup = BeautifulSoup(markup = session_response.content, features = 'html.parser')
 
         abstract_links = [link for link in session_soup.find_all(name = 'a', href = True)
-                          if 'Session' in link['href'] and 'showAbstract' not in link['href']]
+                          if '/Session/' in link['href'] and 'showAbstract' not in link['href']]
         for abstract_link in abstract_links:
             abstract_url = urljoin(session_url, abstract_link['href'])
             abstract_response = requests.get(url = abstract_url)
