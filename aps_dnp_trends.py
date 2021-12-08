@@ -22,8 +22,8 @@ def main():
     epitome_response = requests.get(url = epitome_url)
     epitome_soup = BeautifulSoup(markup = epitome_response.content, features = 'html.parser')
 
-    session_links = set([link for link in epitome_soup.find_all(name = 'a', href = True)
-                         if 'Session' in link['href']])
+    session_links = sorted(set([link for link in epitome_soup.find_all(name = 'a', href = True)
+                                if 'Session' in link['href']]), key = lambda tag: tag['href'])
     for session_link in session_links:
         session_url = urljoin(epitome_url, session_link['href'])
         session_response = requests.get(url = session_url)
