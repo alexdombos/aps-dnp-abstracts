@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
 from bs4 import BeautifulSoup
+from collections import namedtuple
 from datetime import datetime
 from urllib.parse import urljoin
 import requests
+
+Abstract = namedtuple('Abstract', ['date', 'identifier', 'session', 'title', 'authors', 'text'])
 
 def scrape_session(session):
     try:
@@ -15,7 +18,8 @@ def scrape_session(session):
 
     date = datetime.strptime(date_text, "%B %d, %Y").strftime("%m/%d/%Y")
     [session] = [heading.text for heading in session.find_all('h3') if all(part in heading.text for part in ('Session', ':'))]
-    return date, session
+    return Abstract(date = date, identifier = None, session = session,
+                    title = None, authors = None, text = None)
 
 def scrape_abstract(abstract):
     date = abstract.find(name = 'meta', attrs = {'name': 'citation_date'})['content']
@@ -27,7 +31,8 @@ def scrape_abstract(abstract):
         [text] = [division.text for division in abstract.find_all('div', {'class': 'largernormal', 'style': 'margin-bottom: 1em;'})]
     except ValueError:
         text = ''
-    return date, identifier, session, title, authors, text
+    return Abstract(date = date, identifier = identifier, session = session,
+                    title = title, authors = authors, text = text)
 
 def main():
 
@@ -53,9 +58,9 @@ def main():
 
             identifier = abstract_link.text.split(':')[0].strip()
             abstract_data = scrape_abstract(abstract_soup)
-            assert abstract_data[0] == session_data[0]
-            assert abstract_data[1] == identifier
-            assert abstract_data[2] == session_data[1]
+            assert abstract_data.date == session_data.date
+            assert abstract_data.identifier == identifier
+            assert abstract_data.session == session_data.session
 
 if __name__ == '__main__':
     main()
