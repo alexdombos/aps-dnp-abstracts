@@ -18,7 +18,7 @@ def scrape(abstract):
 
 def main():
 
-    epitome_url = 'https://meetings.aps.org/Meeting/DNP16/APS_epitome'
+    epitome_url = 'https://meetings.aps.org/Meeting/DNP19/APS_epitome'
     epitome_response = requests.get(url = epitome_url)
     epitome_soup = BeautifulSoup(markup = epitome_response.content, features = 'html.parser')
 
@@ -35,8 +35,12 @@ def main():
             abstract_url = urljoin(session_url, abstract_link['href'])
             abstract_response = requests.get(url = abstract_url)
             abstract_soup = BeautifulSoup(markup = abstract_response.content, features = 'html.parser')
-            info = scrape(abstract_soup)
-            assert info[1] == abstract_link.text.split(':')[0].strip()
+
+            identifier = abstract_link.text.split(':')[0].strip()
+            [session] = [heading.text for heading in session_soup.find_all('h3') if all(part in heading.text for part in ('Session', ':'))]
+            data = scrape(abstract_soup)
+            assert data[1] == identifier
+            assert data[2] == session
 
 if __name__ == '__main__':
     main()
