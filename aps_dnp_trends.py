@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from bs4 import BeautifulSoup
+from datetime import datetime
 from urllib.parse import urljoin
 import requests
 
@@ -36,9 +37,17 @@ def main():
             abstract_response = requests.get(url = abstract_url)
             abstract_soup = BeautifulSoup(markup = abstract_response.content, features = 'html.parser')
 
+            try:
+                dates = [date.text.split(',', 1)[1].strip() for date in session_soup.find_all('a', href = False) if date.text and date.text != 'Not Participating']
+                assert all(date == dates[0] for date in dates)
+                date_text = dates[0]
+            except IndexError:
+                date_text = session_soup.find_all('font', attrs = {'size': -1})[0].text.split('\n')[1].split(',', 1)[1].strip()
+            date = datetime.strptime(date_text, "%B %d, %Y").strftime("%m/%d/%Y")
             identifier = abstract_link.text.split(':')[0].strip()
             [session] = [heading.text for heading in session_soup.find_all('h3') if all(part in heading.text for part in ('Session', ':'))]
             data = scrape(abstract_soup)
+            assert data[0] == date
             assert data[1] == identifier
             assert data[2] == session
 
