@@ -78,6 +78,7 @@ def main():
                 abstract_soup = BeautifulSoup(markup = abstract_response.content, features = 'html.parser')
 
                 identifier = abstract_link.text.split(':')[0].strip()
+                title = abstract_link.text.split(':', 1)[1].strip()
                 abstract_data = scrape_abstract(abstract_soup)
                 assert abstract_data.date == session_data.date
                 assert abstract_data.identifier == identifier
