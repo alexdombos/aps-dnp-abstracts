@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from collections import namedtuple
 from datetime import datetime
 from urllib.parse import urljoin
+import os
 import requests
 
 Abstract = namedtuple('Abstract', ['date', 'identifier', 'session', 'title', 'authors', 'text'])
@@ -49,17 +50,42 @@ def scrape_abstract(abstract):
     try:
         [text] = [division.text for division in abstract.find_all('div', {'class': 'largernormal', 'style': 'margin-bottom: 1em;'})]
     except ValueError:
-        text = ''
+        text = None
     return Abstract(date = date, identifier = identifier, session = session,
                     title = title, authors = authors, text = text)
 
+def format_abstract(abstract):
+    not_available = 'NA'
+    if not abstract.authors:
+        abstract = abstract._replace(authors = not_available)
+    if not abstract.text:
+        abstract = abstract._replace(text = not_available)
+    return abstract
+
+def save_abstract(path, abstract):
+    abstract = format_abstract(abstract)
+    with open(f'{path}/{abstract.identifier}', 'w') as output:
+        for name, value in abstract._asdict().items():
+            if name == 'text':
+                output.write(repr(value)[1:-1] + '\n')
+            else:
+                output.write(value + '\n')
+
 def main():
+
+    data_path = 'abstracts'
+    if not os.path.exists(data_path):
+        os.makedirs(data_path)
 
     aps_dnp_years = all_aps_dnp_years()
     for year, year_url_segment in aps_dnp_years.items():
         epitome_url = f'https://meetings.aps.org/Meeting/{year_url_segment}/APS_epitome'
         epitome_response = requests.get(url = epitome_url)
         epitome_soup = BeautifulSoup(markup = epitome_response.content, features = 'html.parser')
+
+        year_path = os.path.join(data_path, str(year))
+        if not os.path.exists(year_path):
+            os.makedirs(year_path)
 
         session_links = sorted(set([link for link in epitome_soup.find_all(name = 'a', href = True)
                                 if 'Session' in link['href']]), key = lambda tag: tag['href'])
@@ -79,10 +105,14 @@ def main():
 
                 identifier = abstract_link.text.split(':')[0].strip()
                 title = abstract_link.text.split(':', 1)[1].strip()
+                session_data = session_data._replace(identifier = identifier)
+                session_data = session_data._replace(title = title)
+
                 abstract_data = scrape_abstract(abstract_soup)
                 assert abstract_data.date == session_data.date
-                assert abstract_data.identifier == identifier
+                assert abstract_data.identifier == session_data.identifier
                 assert abstract_data.session == session_data.session
+                save_abstract(year_path, abstract_data)
 
 if __name__ == '__main__':
     main()
