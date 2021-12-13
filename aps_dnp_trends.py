@@ -108,11 +108,14 @@ def main():
                 session_data = session_data._replace(identifier = identifier)
                 session_data = session_data._replace(title = title)
 
-                abstract_data = scrape_abstract(abstract_soup)
-                assert abstract_data.date == session_data.date
-                assert abstract_data.identifier == session_data.identifier
-                assert abstract_data.session == session_data.session
-                save_abstract(year_path, abstract_data)
+                try:
+                    abstract_data = scrape_abstract(abstract_soup)
+                    assert abstract_data.date == session_data.date
+                    assert abstract_data.identifier == session_data.identifier
+                    assert abstract_data.session == session_data.session
+                    save_abstract(year_path, abstract_data)
+                except (TypeError, ValueError) as error:
+                    save_abstract(year_path, session_data)
 
 if __name__ == '__main__':
     main()
