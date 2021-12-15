@@ -117,8 +117,45 @@ def download_data():
                 except (TypeError, ValueError) as error:
                     save_abstract(year_path, session_data)
 
+def check_downloaded_data_format():
+
+    for dirpath, dirnames, filenames in sorted(os.walk('abstracts')):
+        if not dirnames:
+            assert filenames
+            for filename in sorted(filenames):
+                with open(os.path.join(dirpath, filename)) as abstract:
+                    print(abstract.name)
+                    lines = abstract.read().splitlines()
+
+                assert len(lines) == 6
+
+                date, identifier, session, title, authors, text = lines
+
+                assert len(date) == 10
+                assert date[2] == '/'
+                assert date[5] == '/'
+                assert date[:2].isdecimal()
+                assert date[3:5].isdecimal()
+                assert date[6:].isdecimal()
+                assert date[6:] == dirpath.split('/')[-1]
+
+                assert identifier == filename
+                assert '.' in identifier
+                assert len(identifier.split('.')[0]) in (2, 3, 4)
+                assert len(identifier.split('.')[1]) == 5
+                assert identifier.split('.')[1].isdecimal()
+
+                assert session.startswith(f"Session {identifier.split('.')[0]}:")
+
+                #assert any(part in authors for part in (',', 'NA'))
+
+                assert text[:2] in ('\\n', 'NA')
+                #print(text)
+                #print(text.encode().decode('unicode_escape'))
+
 def main():
     download_data()
+    check_downloaded_data_format()
 
 if __name__ == '__main__':
     main()
