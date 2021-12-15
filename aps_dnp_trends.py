@@ -71,7 +71,7 @@ def save_abstract(path, abstract):
             else:
                 output.write(value + '\n')
 
-def main():
+def download_data():
 
     data_path = 'abstracts'
     if not os.path.exists(data_path):
@@ -116,6 +116,9 @@ def main():
                     save_abstract(year_path, abstract_data)
                 except (TypeError, ValueError) as error:
                     save_abstract(year_path, session_data)
+
+def main():
+    download_data()
 
 if __name__ == '__main__':
     main()
