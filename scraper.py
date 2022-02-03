@@ -88,7 +88,7 @@ def download_data():
             os.makedirs(year_path)
 
         session_links = sorted(set([link for link in epitome_soup.find_all(name = 'a', href = True)
-                                if 'Session' in link['href']]), key = lambda tag: tag['href'])
+                                    if 'Session' in link['href']]), key = lambda tag: tag['href'])
         for session_link in session_links:
             session_url = urljoin(epitome_url, session_link['href'])
             session_response = requests.get(url = session_url)
